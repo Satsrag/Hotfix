@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 
+def javaVersion = JavaVersion.VERSION_1_7
 android {
     compileSdkVersion 25
     buildToolsVersion "25.0.3"
@@ -10,6 +11,31 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        multiDexEnabled true
+
+        /**
+         * buildConfig can change during patch!
+         * we can use the newly value when patch
+         */
+        buildConfigField "String", "MESSAGE", "\"I am the base apk\""
+//        buildConfigField "String", "MESSAGE", "\"I am the patch apk\""
+        /**
+         * client version would update with patch
+         * so we can get the newly git version easily!
+         */
+        buildConfigField "String", "TINKER_ID", "\"${getTinkerIdValue()}\""
+        buildConfigField "String", "PLATFORM", "\"all\""
+    }
+
+    compileOptions {
+        sourceCompatibility javaVersion
+        targetCompatibility javaVersion
+    }
+
+    //recommend
+    dexOptions {
+        jumboMode = true
     }
 
     signingConfigs {
@@ -27,7 +53,7 @@ android {
     buildTypes {
         release {
             signingConfig signingConfigs.release
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -41,13 +67,13 @@ dependencies {
     //tinker的核心库
     compile('com.tencent.tinker:tinker-android-lib:1.7.9')
     //可选，用于生成application类
-	provided('com.tencent.tinker:tinker-android-anno:1.7.9')
+    provided('com.tencent.tinker:tinker-android-anno:1.7.9')
 
     compile "com.android.support:multidex:1.0.1"
 }
 
 def gitSha() {
-    return "v1.0.3"
+    return "v1.0.5"
 }
 
 def bakPath = file("${buildDir}/bakApk/")
@@ -57,7 +83,7 @@ def bakPath = file("${buildDir}/bakApk/")
  * use tinkerPatchRelease -POLD_APK=  -PAPPLY_MAPPING=  -PAPPLY_RESOURCE= to build patch
  * add apk from the build/bakApk
  */
-def bakDir = "app-release-0510-13-04-31"
+def bakDir = "app-release-0510-16-43-04"
 
 ext {
     //for some reason, you may want to ignore tinkerBuild, such as instant run debug build?
@@ -233,7 +259,7 @@ if (buildWithTinker()) {
              * you must include all your resources in apk here,
              * otherwise, they won't repack in the new apk resources.
              */
-            pattern = ["res/*", "assets/*", "resources.arsc", "AndroidManifest.xml"]
+            pattern = ["res/*", "assets/*", "resources.arsc", "AndroidManifest.xml", "r/*"]
 
             /**
              * optional，default '[]'
@@ -380,4 +406,67 @@ if (buildWithTinker()) {
         }
     }
 }
+
+apply plugin: 'AndResGuard'
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.tencent.mm:AndResGuard-gradle-plugin:1.2.3'
+    }
+}
+
+andResGuard {
+    // mappingFile = file("./resource_mapping.txt")
+    mappingFile = null
+    // It will be invalid when you sign apk with schemeV2
+    use7zip = true
+    useSign = true
+    // it will keep the origin path of your resources when it's true
+    keepRoot = false
+    whiteList = [
+            // your icon
+            "R.drawable.icon",
+            // for fabric
+            "R.string.com.crashlytics.*",
+            // for umeng update
+            "R.string.umeng*",
+            "R.string.UM*",
+            "R.string.tb_*",
+            "R.layout.umeng*",
+            "R.layout.tb_*",
+            "R.drawable.umeng*",
+            "R.drawable.tb_*",
+            "R.anim.umeng*",
+            "R.color.umeng*",
+            "R.color.tb_*",
+            "R.style.*UM*",
+            "R.style.umeng*",
+            "R.id.umeng*",
+            // umeng share for sina
+            "R.drawable.sina*",
+            // for google-services.json
+            "R.string.google_app_id",
+            "R.string.gcm_defaultSenderId",
+            "R.string.default_web_client_id",
+            "R.string.ga_trackingId",
+            "R.string.firebase_database_url",
+            "R.string.google_api_key",
+            "R.string.google_crash_reporting_api_key"
+    ]
+    compressFilePattern = [
+            "*.png",
+            "*.jpg",
+            "*.jpeg",
+            "*.gif",
+            "resources.arsc"
+    ]
+    sevenzip {
+        artifact = 'com.tencent.mm:SevenZip:1.2.3'
+        //path = "/usr/local/bin/7za"
+    }
+}
+
 
