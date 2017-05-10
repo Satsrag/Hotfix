@@ -47,7 +47,7 @@ dependencies {
 }
 
 def gitSha() {
-    return "v1.0.2"
+    return "v1.0.3"
 }
 
 def bakPath = file("${buildDir}/bakApk/")
