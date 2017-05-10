@@ -16,6 +16,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void loadPatch(View view) {
-        TinkerInstaller.onReceiveUpgradePatch(getApplication(), Environment.getExternalStorageDirectory() + "patch.apk");
+        TinkerInstaller.onReceiveUpgradePatch(getApplication(), Environment.getExternalStorageDirectory() + "/patch.apk");
     }
 }
