@@ -3,11 +3,13 @@ package com.zuga.hotfix;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 
 import com.tencent.tinker.lib.tinker.TinkerInstaller;
 
 public class MainActivity extends AppCompatActivity {
+    private final static String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -16,6 +18,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void loadPatch(View view) {
-        TinkerInstaller.onReceiveUpgradePatch(getApplication(), Environment.getExternalStorageDirectory() + "/patch.apk");
+        final String path = Environment.getExternalStorageDirectory() + "/patch.apk";
+        Log.e(TAG, "loadPatch: " + path);
+        TinkerInstaller.onReceiveUpgradePatch(getApplication(), path);
     }
 }
