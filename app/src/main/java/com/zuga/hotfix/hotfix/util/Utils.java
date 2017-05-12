@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.zuga.hotfix.hotfix;
+package com.zuga.hotfix.hotfix.util;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

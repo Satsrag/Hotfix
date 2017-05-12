@@ -23,8 +23,9 @@
         </activity>
 
         <service
-            android:name=".hotfix.SampleResultService"
+            android:name=".hotfix.service.SampleResultService"
             android:exported="false" />
+
     </application>
 
 </manifest>

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.zuga.hotfix.hotfix;
+package com.zuga.hotfix.hotfix.service;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -24,8 +24,10 @@ import com.tencent.tinker.lib.service.DefaultTinkerResultService;
 import com.tencent.tinker.lib.service.PatchResult;
 import com.tencent.tinker.lib.util.TinkerLog;
 import com.tencent.tinker.lib.util.TinkerServiceInternals;
+import com.zuga.hotfix.hotfix.util.Utils;
 
 import java.io.File;
+
 
 /**
  * optional, you can just use DefaultTinkerResultService

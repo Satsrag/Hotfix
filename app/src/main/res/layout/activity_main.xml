@@ -10,4 +10,15 @@
         android:layout_height="wrap_content"
         android:onClick="loadPatch"
         android:text="load patch" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="showInfo"
+        android:text="show info" />
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@color/colorPrimaryDark" />
 </LinearLayout>
