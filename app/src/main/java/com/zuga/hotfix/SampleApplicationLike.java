@@ -12,7 +12,6 @@ import com.tencent.tinker.lib.tinker.TinkerInstaller;
 import com.tencent.tinker.lib.util.UpgradePatchRetry;
 import com.tencent.tinker.loader.app.DefaultApplicationLike;
 import com.tencent.tinker.loader.shareutil.ShareConstants;
-import com.zuga.bainu.BNApiFactory;
 
 /**
  * @author saqrag
@@ -21,7 +20,7 @@ import com.zuga.bainu.BNApiFactory;
  * 10/05/2017
  * @since 1.0
  **/
-
+@SuppressWarnings("unused")
 @DefaultLifeCycle(application = "com.zuga.hotfix.SampleApplication",
         flags = ShareConstants.TINKER_ENABLE_ALL)
 public class SampleApplicationLike extends DefaultApplicationLike {
@@ -53,7 +52,6 @@ public class SampleApplicationLike extends DefaultApplicationLike {
     @Override
     public void onCreate() {
         super.onCreate();
-        BNApiFactory.init(getApplication(), "bn0428040730");
     }
 }
 

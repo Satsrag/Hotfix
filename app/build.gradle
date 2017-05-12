@@ -47,7 +47,6 @@ dependencies {
     compile 'com.tencent.tinker:tinker-android-lib:1.7.9'
     provided 'com.tencent.tinker:tinker-android-anno:1.7.9'
     compile 'com.android.support:multidex:1.0.1'
-    compile 'com.github.Saqrag:BainuSdk:1.0.1'
 }
 
 //Tinker
