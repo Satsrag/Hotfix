@@ -12,6 +12,7 @@ import com.tencent.tinker.lib.tinker.TinkerInstaller;
 import com.tencent.tinker.lib.util.UpgradePatchRetry;
 import com.tencent.tinker.loader.app.DefaultApplicationLike;
 import com.tencent.tinker.loader.shareutil.ShareConstants;
+import com.zuga.hotfix.hotfix.SampleResultService;
 
 /**
  * @author saqrag
@@ -41,7 +42,7 @@ public class SampleApplicationLike extends DefaultApplicationLike {
         //you must install multiDex whatever tinker is installed!
         MultiDex.install(base);
         UpgradePatchRetry.getInstance(getApplication()).setRetryEnable(true);
-        TinkerInstaller.install(this);
+        TinkerInstaller.install(this, null, null, null, SampleResultService.class, null);
     }
 
     @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
