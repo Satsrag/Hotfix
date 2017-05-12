@@ -10,7 +10,7 @@ android {
         minSdkVersion 15
         targetSdkVersion 25
         versionCode 1
-        versionName "1.0.5"
+        versionName "1.0.7"
         multiDexEnabled true
         buildConfigField "String", "MESSAGE", "\"I am the base apk\""
         buildConfigField "String", "TINKER_ID", "\"patch-${versionName}\""
@@ -55,7 +55,7 @@ dependencies {
 
 //Tinker
 def bakPath = file("${buildDir}/bakApk/")
-def bakDir = "base-1.0.4"
+def bakDir = "base-1.0.6"
 def tinkerVersion = "base-${android.defaultConfig.versionName}"
 def tinkerEnable = true
 
