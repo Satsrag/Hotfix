@@ -12,6 +12,7 @@ import com.tencent.tinker.lib.tinker.TinkerInstaller;
 import com.tencent.tinker.lib.util.UpgradePatchRetry;
 import com.tencent.tinker.loader.app.DefaultApplicationLike;
 import com.tencent.tinker.loader.shareutil.ShareConstants;
+import com.zuga.bainu.BNApiFactory;
 
 /**
  * @author saqrag
@@ -52,6 +53,7 @@ public class SampleApplicationLike extends DefaultApplicationLike {
     @Override
     public void onCreate() {
         super.onCreate();
+        BNApiFactory.init(getApplication(), "bn0428040730");
     }
 }
 

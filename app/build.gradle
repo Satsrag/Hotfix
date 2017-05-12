@@ -1,6 +1,7 @@
 apply plugin: 'com.android.application'
 
 def javaVersion = JavaVersion.VERSION_1_7
+
 android {
     compileSdkVersion 25
     buildToolsVersion "25.0.3"
@@ -9,20 +10,16 @@ android {
         minSdkVersion 15
         targetSdkVersion 25
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.1"
         multiDexEnabled true
     }
-
     compileOptions {
         sourceCompatibility javaVersion
         targetCompatibility javaVersion
     }
-
-    //recommend
     dexOptions {
         jumboMode = true
     }
-
     signingConfigs {
         release {
             try {
@@ -47,17 +44,150 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:25.3.1'
-    compile 'com.android.support.constraint:constraint-layout:1.0.2'
-
-    //tinker的核心库
-    compile('com.tencent.tinker:tinker-android-lib:1.7.9')
-    //可选，用于生成application类
-    provided('com.tencent.tinker:tinker-android-anno:1.7.9')
-
-    compile "com.android.support:multidex:1.0.1"
+    compile 'com.tencent.tinker:tinker-android-lib:1.7.9'
+    provided 'com.tencent.tinker:tinker-android-anno:1.7.9'
+    compile 'com.android.support:multidex:1.0.1'
+    compile 'com.github.Saqrag:BainuSdk:1.0.1'
 }
 
-apply from: 'tinkerpatch.gradle'
+//Tinker
+def bakPath = file("${buildDir}/bakApk/")
+def bakDir = "base1.0.0"
+def tinkerVersion = "base${android.defaultConfig.versionName}"
+def tinkerEnable = true
+
+if (tinkerEnable) {
+    apply plugin: 'com.tencent.tinker.patch'
+    tinkerPatch {
+        oldApk = "${bakPath}/${bakDir}/app-release.apk"
+        ignoreWarning = false
+        useSign = true
+        tinkerEnable = true
+        buildConfig {
+            applyMapping = "${bakPath}/${bakDir}/app-release-mapping.txt"
+            applyResourceMapping = "${bakPath}/${bakDir}/app-release-R.txt"
+            tinkerId = "${tinkerVersion}"
+            keepDexApply = false
+            isProtectedApp = false
+        }
+        dex {
+            dexMode = "jar"
+            pattern = ["classes*.dex", "assets/secondary-dex-?.jar"]
+            loader = ["tinker.sample.android.app.BaseBuildInfo"]
+        }
+        lib {
+            pattern = ["lib/*/*.so"]
+        }
+        res {
+            pattern = ["res/*", "r/*", "assets/*", "resources.arsc", "AndroidManifest.xml"]
+            ignoreChange = ["assets/sample_meta.txt"]
+            largeModSize = 100
+        }
+        packageConfig {
+            configField("patchMessage", "tinker is sample to use")
+            configField("platform", "all")
+            configField("patchVersion", "1.0")
+        }
+        sevenZip {
+            zipArtifact = "com.tencent.mm:SevenZip:1.2.3"
+        }
+    }
+    apply plugin: 'AndResGuard'
+    andResGuard {
+        def mf = file("${bakPath}/${bakDir}/app-release-resource_mapping.txt")
+        if (!mf.exists()) {
+            mappingFile = null
+        } else {
+            mappingFile = mf
+        }
+        use7zip = true
+        useSign = true
+        keepRoot = false
+        whiteList = [
+                // your icon
+                "R.drawable.icon",
+                // for fabric
+                "R.string.com.crashlytics.*",
+                // for umeng update
+                "R.string.umeng*",
+                "R.string.UM*",
+                "R.string.tb_*",
+                "R.layout.umeng*",
+                "R.layout.tb_*",
+                "R.drawable.umeng*",
+                "R.drawable.tb_*",
+                "R.anim.umeng*",
+                "R.color.umeng*",
+                "R.color.tb_*",
+                "R.style.*UM*",
+                "R.style.umeng*",
+                "R.id.umeng*",
+                // umeng share for sina
+                "R.drawable.sina*",
+                // for google-services.json
+                "R.string.google_app_id",
+                "R.string.gcm_defaultSenderId",
+                "R.string.default_web_client_id",
+                "R.string.ga_trackingId",
+                "R.string.firebase_database_url",
+                "R.string.google_api_key",
+                "R.string.google_crash_reporting_api_key"
+        ]
+        compressFilePattern = [
+                "*.png",
+                "*.jpg",
+                "*.jpeg",
+                "*.gif",
+                "resources.arsc"
+        ]
+        sevenzip {
+            artifact = 'com.tencent.mm:SevenZip:1.2.3'
+        }
+    }
+
+    android.applicationVariants.all { variant ->
+        def taskName = variant.name
+        tasks.all {
+            if ("tinkerPatch${taskName.capitalize()}".equalsIgnoreCase(it.name)) {
+                it.doFirst({
+                    it.buildApkPath = "${buildDir}/outputs/apk/AndResGuard_${project.getName()}-${taskName}/${project.getName()}-${taskName}_aligned_signed.apk"
+                })
+            }
+            if (it.name.startsWith("resguard") && taskName.equalsIgnoreCase("release")) {
+                it.doLast() {
+                    copy {
+                        def copyPath = "${bakPath}/${tinkerVersion}"
+                        println("resguard release copy task start>>>>>>>>>>")
+                        from "${buildDir}/outputs/apk/AndResGuard_${project.getName()}-${taskName}/${project.getName()}-${taskName}_aligned_signed.apk"
+                        into file(copyPath)
+                        rename { String fileName ->
+                            fileName.replace("${project.getName()}-${taskName}_aligned_signed.apk", "${project.getName()}-${taskName}.apk")
+                        }
+
+                        from "${buildDir}/outputs/mapping/${taskName}/mapping.txt"
+                        into file(copyPath)
+                        rename { String fileName ->
+                            fileName.replace("mapping.txt", "${project.getName()}-${taskName}-mapping.txt")
+                        }
+
+                        from "${buildDir}/intermediates/symbols/${taskName}/R.txt"
+                        into file(copyPath)
+                        rename { String fileName ->
+                            fileName.replace("R.txt", "${project.getName()}-${taskName}-R.txt")
+                        }
+                        from "${buildDir}/outputs/apk/AndResGuard_${project.getName()}-${taskName}/resource_mapping_${project.getName()}-release.txt"
+                        into file(copyPath)
+                        rename { String fileName ->
+                            fileName.replace("resource_mapping_${project.getName()}-release.txt", "${project.getName()}-${taskName}-resource_mapping.txt")
+                        }
+                        println("copy path : ${copyPath}")
+                        println("<<<<<<<<<resgurd release copy task end")
+                    }
+                }
+            }
+        }
+    }
+}
 
 
 
