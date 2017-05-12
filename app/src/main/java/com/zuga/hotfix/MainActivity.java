@@ -10,6 +10,7 @@ import com.tencent.tinker.lib.tinker.Tinker;
 import com.tencent.tinker.lib.tinker.TinkerInstaller;
 import com.tencent.tinker.lib.tinker.TinkerLoadResult;
 import com.tencent.tinker.loader.shareutil.ShareConstants;
+import com.zuga.hotfix.hotfix.Utils;
 
 public class MainActivity extends AppCompatActivity {
     private final static String TAG = "MainActivity";
@@ -18,6 +19,18 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Utils.setBackground(false);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Utils.setBackground(true);
     }
 
     public void loadPatch(View view) {
