@@ -1,4 +1,4 @@
-package com.zuga.hotfix.Net;
+package com.zuga.hotfix.hotfix.Net;
 
 import android.os.AsyncTask;
 import android.text.TextUtils;

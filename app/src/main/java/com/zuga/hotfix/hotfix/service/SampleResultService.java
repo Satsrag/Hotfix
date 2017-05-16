@@ -16,10 +16,9 @@
 
 package com.zuga.hotfix.hotfix.service;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.Context;
-import android.content.Intent;
+import android.os.Handler;
+import android.os.Looper;
+import android.widget.Toast;
 
 import com.tencent.tinker.lib.service.DefaultTinkerResultService;
 import com.tencent.tinker.lib.service.PatchResult;
@@ -48,17 +47,17 @@ public class SampleResultService extends DefaultTinkerResultService {
         //first, we want to kill the recover process
         TinkerServiceInternals.killTinkerPatchServiceProcess(getApplicationContext());
 
-//        Handler handler = new Handler(Looper.getMainLooper());
-//        handler.post(new Runnable() {
-//            @Override
-//            public void run() {
-//                if (result.isSuccess) {
-//                    Toast.makeText(getApplicationContext(), "patch success, please restart process", Toast.LENGTH_LONG).show();
-//                } else {
-//                    Toast.makeText(getApplicationContext(), "patch fail, please check reason", Toast.LENGTH_LONG).show();
-//                }
-//            }
-//        });
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (result.isSuccess) {
+                    Toast.makeText(getApplicationContext(), "patch success, please restart process", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(getApplicationContext(), "patch fail, please check reason", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
         // is success and newPatch, it is nice to delete the raw file, and restart at once
         // for old patch, you can't delete the patch file
         if (result.isSuccess) {
@@ -92,14 +91,7 @@ public class SampleResultService extends DefaultTinkerResultService {
     private void restartProcess() {
         TinkerLog.i(TAG, "app is background now, i can kill quietly");
         //you can send service or broadcast intent to restart your process
-//        android.os.Process.killProcess(android.os.Process.myPid());
-
-        Intent intent = getBaseContext().getPackageManager()
-                .getLaunchIntentForPackage(getBaseContext().getPackageName());
-        PendingIntent restartIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, PendingIntent.FLAG_ONE_SHOT);
-        AlarmManager mgr = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 1000, restartIntent); // 1秒钟后重启应用
-        System.exit(0);
+        android.os.Process.killProcess(android.os.Process.myPid());
     }
 
 }

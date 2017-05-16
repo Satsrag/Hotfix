@@ -1,19 +1,24 @@
 apply plugin: 'com.android.application'
 
 def javaVersion = JavaVersion.VERSION_1_7
+def bakPath = file("${buildDir}/bakApk/")
+def bakDir = "base"
+def patchVersion = "1" // package new base version this value must be set 0;
+def baseVersionCode = 1
+def baseVersionName = "1.0.0"
 
 android {
     compileSdkVersion 25
-    buildToolsVersion "25.0.2"
+    buildToolsVersion "25.0.3"
     defaultConfig {
         applicationId "com.zuga.hotfix"
         minSdkVersion 15
         targetSdkVersion 25
-        versionCode 1
-        versionName "1.0.11"
+        versionCode baseVersionCode
+        versionName "${baseVersionName}"
         multiDexEnabled true
         buildConfigField "String", "MESSAGE", "\"I am the base apk\""
-        buildConfigField "String", "TINKER_ID", "\"patch-${versionName}\""
+        buildConfigField "String", "TINKER_ID", "\"${patchVersion}\""
         buildConfigField "String", "PLATFORM", "\"all\""
     }
     compileOptions {
@@ -54,9 +59,6 @@ dependencies {
     compile 'com.umeng.analytics:analytics:latest.integration'
 }
 
-//Tinker
-def bakPath = file("${buildDir}/bakApk/")
-def bakDir = "base-1.0.9"
 def tinkerVersion = "base-${android.defaultConfig.versionName}"
 def tinkerEnable = true
 

@@ -31,19 +31,24 @@ buildscript {
 apply plugin: 'com.android.application'
 
 def javaVersion = JavaVersion.VERSION_1_7
+def bakPath = file("${buildDir}/bakApk/")
+def bakDir = "base"
+def patchVersion = "1" // package new base version this value must be set 0;
+def baseVersionCode = 1
+def baseVersionName = "1.0.0"
 
 android {
     compileSdkVersion 25
-    buildToolsVersion "25.0.2"
+    buildToolsVersion "25.0.3"
     defaultConfig {
         applicationId "com.zuga.hotfix"
         minSdkVersion 15
         targetSdkVersion 25
-        versionCode 1
-        versionName "1.0.11"
+        versionCode baseVersionCode
+        versionName "${baseVersionName}"
         multiDexEnabled true
         buildConfigField "String", "MESSAGE", "\"I am the base apk\""
-        buildConfigField "String", "TINKER_ID", "\"patch-${versionName}\""
+        buildConfigField "String", "TINKER_ID", "\"${patchVersion}\""
         buildConfigField "String", "PLATFORM", "\"all\""
     }
     compileOptions {
@@ -84,9 +89,6 @@ dependencies {
     compile 'com.umeng.analytics:analytics:latest.integration'
 }
 
-//Tinker
-def bakPath = file("${buildDir}/bakApk/")
-def bakDir = "base-1.0.9"
 def tinkerVersion = "base-${android.defaultConfig.versionName}"
 def tinkerEnable = true
 
@@ -234,18 +236,13 @@ import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.support.multidex.MultiDex;
 
 import com.tencent.tinker.anno.DefaultLifeCycle;
-import com.tencent.tinker.lib.tinker.Tinker;
-import com.tencent.tinker.lib.tinker.TinkerInstaller;
 import com.tencent.tinker.loader.app.DefaultApplicationLike;
 import com.tencent.tinker.loader.shareutil.ShareConstants;
 import com.umeng.analytics.MobclickAgent;
-import com.zuga.hotfix.hotfix.Log.MyLogImp;
+import com.zuga.hotfix.hotfix.HotFix;
 import com.zuga.hotfix.hotfix.packe_ng.PackerNg;
-import com.zuga.hotfix.hotfix.util.SampleApplicationContext;
-import com.zuga.hotfix.hotfix.util.TinkerManager;
 
 /**
  * @author saqrag
@@ -272,24 +269,7 @@ public class SampleApplicationLike extends DefaultApplicationLike {
     @Override
     public void onBaseContextAttached(Context base) {
         super.onBaseContextAttached(base);
-        //you must install multiDex whatever tinker is installed!
-        MultiDex.install(base);
-
-        SampleApplicationContext.application = getApplication();
-        SampleApplicationContext.context = getApplication();
-        TinkerManager.setTinkerApplicationLike(this);
-
-        TinkerManager.initFastCrashProtect();
-        //should set before tinker is installed
-        TinkerManager.setUpgradeRetryEnable(true);
-
-        //optional set logIml, or you can use default debug log
-        TinkerInstaller.setLogIml(new MyLogImp());
-
-        //installTinker after load multiDex
-        //or you can put com.tencent.tinker.** to main dex
-        TinkerManager.installTinker(this);
-        Tinker tinker = Tinker.with(getApplication());
+        HotFix.init(this);
     }
 
     @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
@@ -311,48 +291,21 @@ public class SampleApplicationLike extends DefaultApplicationLike {
 ```java
 package com.zuga.hotfix;
 
-import android.app.AlertDialog;
-import android.graphics.Typeface;
 import android.os.Bundle;
-import android.util.Log;
-import android.util.TypedValue;
-import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.tencent.tinker.lib.tinker.Tinker;
-import com.tencent.tinker.lib.tinker.TinkerInstaller;
-import com.tencent.tinker.loader.shareutil.ShareConstants;
-import com.tencent.tinker.loader.shareutil.ShareTinkerInternals;
-import com.zuga.hotfix.Net.Callback;
-import com.zuga.hotfix.Net.Http;
-import com.zuga.hotfix.Net.Params;
-import com.zuga.hotfix.hotfix.BuildInfo;
-import com.zuga.hotfix.hotfix.util.MD5;
+import com.zuga.hotfix.hotfix.HotFixHandle;
 import com.zuga.hotfix.hotfix.util.Utils;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.File;
-
 
 public class MainActivity extends PermissionActivity {
     private final static String TAG = "MainActivity";
-    private String mPatchPath;
+    private HotFixHandle hotFixHandle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mPatchPath = getFilesDir() + "/patch";
-        File file = new File(mPatchPath);
-        if (!file.exists()) {
-            //noinspection ResultOfMethodCallIgnored
-            file.mkdirs();
-        }
-        setContentView(R.layout.activity_main);
+        setContentView(com.zuga.hotfix.R.layout.activity_main);
         Toast.makeText(this, "hotfix end", Toast.LENGTH_SHORT).show();
     }
 
@@ -369,115 +322,18 @@ public class MainActivity extends PermissionActivity {
     }
 
     public void loadPatch(View view) {
-        checkPatch();
+        getHotFixHandle().loadPatch();
     }
 
     public void showInfo(View view) {
-        final TextView v = new TextView(this);
-        v.setText(String.format("baseId: %s \npatchId %s\nisLoaded: %s\nisEnable: %s"
-                , getBaseId(), getPatchId(), isLoaded(), isEnabled()));
-        v.setGravity(Gravity.LEFT | Gravity.CENTER_VERTICAL);
-        v.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10);
-        v.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        v.setTextColor(0xFF000000);
-        v.setTypeface(Typeface.MONOSPACE);
-        final int padding = 16;
-        v.setPadding(padding, padding, padding, padding);
-
-        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setCancelable(true);
-        builder.setView(v);
-        final AlertDialog alert = builder.create();
-        alert.show();
+        Toast.makeText(this, getHotFixHandle().getInfo(), Toast.LENGTH_LONG).show();
     }
 
-    private String getBaseId() {
-        final Tinker tinker = Tinker.with(getApplicationContext());
-        if (tinker.isTinkerLoaded()) {
-            return tinker.getTinkerLoadResultIfPresent().getPackageConfigByName(ShareConstants.TINKER_ID);
-        } else {
-            return ShareTinkerInternals.getManifestTinkerID(getApplicationContext());
+    private HotFixHandle getHotFixHandle() {
+        if (hotFixHandle == null) {
+            hotFixHandle = new HotFixHandle();
         }
-    }
-
-    private String getPatchId() {
-        return BuildInfo.TINKER_ID;
-    }
-
-    private boolean isLoaded() {
-        return Tinker.with(getApplicationContext()).isTinkerLoaded();
-    }
-
-    private boolean isEnabled() {
-        return Tinker.with(getApplicationContext()).isTinkerEnabled();
-    }
-
-    private void checkPatch() {
-        String path = "http://192.168.1.113/thinkphp";
-        String baseId = getBaseId();
-        baseId = baseId.replaceAll("tinker_id_base-", "");
-        String patchId = getPatchId();
-        patchId = patchId.replaceAll("patch-", "");
-        Params params = new Params()
-                .addParam("base_version", baseId)
-                .addParam("patch_version", patchId);
-        Http.getInstance().get(path, params, new Callback() {
-            @Override
-            public void onSuccess(String result) {
-                Log.e(TAG, "onSuccess: CheckPatch Net Interface: " + result);
-                int et = 0;
-                String url = "";
-                try {
-                    JSONObject jsonObject = new JSONObject(result);
-                    if (jsonObject.has("et")) {
-                        et = jsonObject.getInt("et");
-                    }
-                    if (jsonObject.has("url")) {
-                        url = jsonObject.getString("url");
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                if (et != 0) {
-                    System.err.println("checkPatch net interface error, et = " + et);
-                    clearPatch();
-                    return;
-                }
-                final String savePath = mPatchPath + "/" + MD5.stringToMD5(url);
-                if (new File(savePath).exists()) {
-                    installPatch(savePath);
-                } else {
-                    downPatch(url);
-                }
-            }
-        });
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    private void clearPatch() {
-        final File file = new File(mPatchPath);
-        if (file.isDirectory()) {
-            final File[] files = file.listFiles();
-            for (File child : files) {
-                if (child.isFile()) {
-                    child.delete();
-                }
-            }
-        }
-    }
-
-    private void downPatch(final String patchPath) {
-        final String savePath = mPatchPath + "/" + MD5.stringToMD5(patchPath);
-        Http.getInstance().down(patchPath, savePath, new Callback() {
-            @Override
-            public void onSuccess(String result) {
-                installPatch(result);
-            }
-        });
-    }
-
-    private void installPatch(final String patchPath) {
-        TinkerInstaller.onReceiveUpgradePatch(getApplication(), patchPath);
+        return hotFixHandle;
     }
 }
 ```
@@ -511,27 +367,32 @@ ZugaTech
 - package base version
 
 ```java
+    def patchVersion = "0" // package new base version this value must be set 0;
+    def baseVersionCode = 1
+    def baseVersionName = "1.0.0"
+```
+
+```java
    ./gradlew resguardRelease
 ```
 
 - package multi channel
 
 ```java
-    java -jar app/build/bakApk/base-1.0.9/app-release.apk markets.txt apks
+    java -jar app/build/bakApk/base-1.0.0/app-release.apk markets.txt apks
 ```
 
 - change code and perform patch version
 
-- change the version name
+- rename app/build/bakApk/base-1.0.0 to app/build/bakApk/base
+
+- change the version name in build.gradle
 
 ```java
-    versionName "1.0.11"
-```
-
-- change the bakDir in module build.gradle
-
-```java
-    def bakDir = "base-1.0.9"
+    def bakDir = "base"
+    def patchVersion = "1" // package new base version this value must be set 0;
+    def baseVersionCode = 1
+    def baseVersionName = "1.0.0"
 ```
 
 - package patch version
