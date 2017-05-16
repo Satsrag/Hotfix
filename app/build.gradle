@@ -10,7 +10,7 @@ android {
         minSdkVersion 15
         targetSdkVersion 25
         versionCode 1
-        versionName "1.0.7"
+        versionName "1.0.11"
         multiDexEnabled true
         buildConfigField "String", "MESSAGE", "\"I am the base apk\""
         buildConfigField "String", "TINKER_ID", "\"patch-${versionName}\""
@@ -51,11 +51,12 @@ dependencies {
     compile 'com.tencent.tinker:tinker-android-lib:1.7.9'
     provided 'com.tencent.tinker:tinker-android-anno:1.7.9'
     compile 'com.android.support:multidex:1.0.1'
+    compile 'com.umeng.analytics:analytics:latest.integration'
 }
 
 //Tinker
 def bakPath = file("${buildDir}/bakApk/")
-def bakDir = "base-1.0.6"
+def bakDir = "base-1.0.9"
 def tinkerVersion = "base-${android.defaultConfig.versionName}"
 def tinkerEnable = true
 

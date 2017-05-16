@@ -17,8 +17,8 @@
         android:onClick="showInfo"
         android:text="show info" />
 
-    <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:src="@color/colorPrimaryDark" />
+    <!--<ImageView-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:src="@color/colorPrimaryDark" />-->
 </LinearLayout>

@@ -12,7 +12,9 @@ import com.tencent.tinker.lib.tinker.Tinker;
 import com.tencent.tinker.lib.tinker.TinkerInstaller;
 import com.tencent.tinker.loader.app.DefaultApplicationLike;
 import com.tencent.tinker.loader.shareutil.ShareConstants;
+import com.umeng.analytics.MobclickAgent;
 import com.zuga.hotfix.hotfix.Log.MyLogImp;
+import com.zuga.hotfix.hotfix.packe_ng.PackerNg;
 import com.zuga.hotfix.hotfix.util.SampleApplicationContext;
 import com.zuga.hotfix.hotfix.util.TinkerManager;
 
@@ -69,6 +71,8 @@ public class SampleApplicationLike extends DefaultApplicationLike {
     @Override
     public void onCreate() {
         super.onCreate();
+        final String market = PackerNg.getMarket(getApplication());
+        MobclickAgent.startWithConfigure(new MobclickAgent.UMAnalyticsConfig(getApplication(), "591588f9677baa34ff001eac", market));
     }
 }
 

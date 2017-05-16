@@ -16,9 +16,12 @@
 
 package com.zuga.hotfix.hotfix.util;
 
+import com.tencent.tinker.lib.listener.DefaultPatchListener;
 import com.tencent.tinker.lib.listener.PatchListener;
 import com.tencent.tinker.lib.patch.AbstractPatch;
 import com.tencent.tinker.lib.patch.UpgradePatch;
+import com.tencent.tinker.lib.reporter.DefaultLoadReporter;
+import com.tencent.tinker.lib.reporter.DefaultPatchReporter;
 import com.tencent.tinker.lib.reporter.LoadReporter;
 import com.tencent.tinker.lib.reporter.PatchReporter;
 import com.tencent.tinker.lib.tinker.TinkerInstaller;
@@ -26,9 +29,6 @@ import com.tencent.tinker.lib.util.TinkerLog;
 import com.tencent.tinker.lib.util.UpgradePatchRetry;
 import com.tencent.tinker.loader.app.ApplicationLike;
 import com.zuga.hotfix.hotfix.crash.SampleUncaughtExceptionHandler;
-import com.zuga.hotfix.hotfix.reporter.SampleLoadReporter;
-import com.zuga.hotfix.hotfix.reporter.SamplePatchListener;
-import com.zuga.hotfix.hotfix.reporter.SamplePatchReporter;
 import com.zuga.hotfix.hotfix.service.SampleResultService;
 
 
@@ -87,11 +87,11 @@ public class TinkerManager {
             return;
         }
         //or you can just use DefaultLoadReporter
-        LoadReporter loadReporter = new SampleLoadReporter(appLike.getApplication());
+        LoadReporter loadReporter = new DefaultLoadReporter(appLike.getApplication());
         //or you can just use DefaultPatchReporter
-        PatchReporter patchReporter = new SamplePatchReporter(appLike.getApplication());
+        PatchReporter patchReporter = new DefaultPatchReporter(appLike.getApplication());
         //or you can just use DefaultPatchListener
-        PatchListener patchListener = new SamplePatchListener(appLike.getApplication());
+        PatchListener patchListener = new DefaultPatchListener(appLike.getApplication());
         //you can set your own upgrade patch if you need
         AbstractPatch upgradePatchProcessor = new UpgradePatch();
 
